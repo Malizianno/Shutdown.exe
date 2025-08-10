@@ -1,0 +1,17 @@
+.check-box {
+    -fx-padding: 0.5em;
+    -fx-background-color: transparent;
+}
+
+.check-box .box {
+    -fx-background-color: lightgray;
+    -fx-border-color: gray;
+    -fx-border-radius: 15;
+    -fx-background-radius: 15;
+    -fx-min-width: 40;
+    -fx-min-height: 20;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #4CAF50;
+}

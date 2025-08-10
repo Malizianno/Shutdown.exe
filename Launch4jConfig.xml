@@ -1,0 +1,10 @@
+<launch4jConfig>
+  <outfile>target/shutdown.exe</outfile>
+  <jar>shutdown.exe-1.0.1.jar</jar>
+  <dontWrapJar>true</dontWrapJar>
+  <headerType>gui</headerType>
+  <icon>src/main/resources/shutdown.ico</icon>
+  <jre>
+    <minVersion>11</minVersion>
+  </jre>
+</launch4jConfig>
