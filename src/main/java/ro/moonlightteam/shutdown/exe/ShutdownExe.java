@@ -1,5 +1,7 @@
 package ro.moonlightteam.shutdown.exe;
 
+import java.util.Optional;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -8,7 +10,9 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -54,18 +58,30 @@ public class ShutdownExe extends Application {
         // Create the "Run" button
         Button runButton = new Button("Run");
         runButton.setOnAction(e -> {
-            if (isNotInputField(dropdown)) {
+            System.out.println("Run button clicked");
+            System.out.println("Input field value: " + inputField.getText());
+            System.out.println("Dropdown value: " + dropdown.getValue());
+            System.out.println("Timer value: " + timer);
+
+            System.out.println("inputField.getText() == 0: " + (inputField.getText().equals("0")));
+            System.out.println("timer != 0: " + (!timer.equals("0")));
+
+            System.out.println("isNotInputField(): " + isNotInputField());
+            System.out.println("isInputFieldIsInHours(): " + isInputFieldIsInHours());
+            System.out.println("isInputFieldIsInMinutes(): " + isInputFieldIsInMinutes());
+
+            if (isNotInputField()) {
                 System.out.println("Closed with switchbox; value: " + timer);
 
                 controller.execCommand(timer);
-            } else if (isInputFieldIsInHours(dropdown)) {
+            } else if (isInputFieldIsInHours()) {
                 System.out.println("Closed with input; value: " + inputField.getText() + " hours");
                 // Convert hours to seconds
                 float hours = Float.parseFloat(inputField.getText());
                 float seconds = hours * 3600;
 
                 controller.execCommand((int) seconds + "");
-            } else if (isInputFieldIsInMinutes(dropdown)) {
+            } else if (isInputFieldIsInMinutes()) {
                 System.out.println("Closed with input; value: " + inputField.getText() + " minutes");
                 // Convert minutes to seconds
                 int minutes = Integer.parseInt(inputField.getText());
@@ -74,7 +90,16 @@ public class ShutdownExe extends Application {
                 controller.execCommand(seconds + "");
             }
 
-            handleClose(null); // Close the application after executing the command
+            if (hasAnythingRun()) {
+                handleClose(null); // Close the application after executing the command
+            } else {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "No time set! Do you want to exit?");
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+                    handleClose(null); // Close the application after executing no command
+                }
+            }
         });
 
         // FIRST ROW
@@ -189,16 +214,20 @@ public class ShutdownExe extends Application {
         stage.show();
     }
 
-    private boolean isNotInputField(ComboBox<String> dropdown) {
-        return inputField.getText() == "0";
+    private boolean isNotInputField() {
+        return inputField.getText().equals("0") && !timer.equals("0");
     }
 
-    private boolean isInputFieldIsInHours(ComboBox<String> dropdown) {
-        return inputField.getText() != "0" && dropdown.getValue() == TIME_HOUR_LABEL;
+    private boolean isInputFieldIsInHours() {
+        return timer.equals("0") && !inputField.getText().equals("0") && dropdown.getValue().equals(TIME_HOUR_LABEL);
     }
 
-    private boolean isInputFieldIsInMinutes(ComboBox<String> dropdown) {
-        return inputField.getText() != "0" && dropdown.getValue() == TIME_MINUTE_LABEL;
+    private boolean isInputFieldIsInMinutes() {
+        return timer.equals("0") && !inputField.getText().equals("0") && dropdown.getValue().equals(TIME_MINUTE_LABEL);
+    }
+
+    private boolean hasAnythingRun() {
+        return isNotInputField() || isInputFieldIsInHours() || isInputFieldIsInMinutes();
     }
 
     private void handleClose(WindowEvent event) {

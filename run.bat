@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0"
-java -jar target/shutdown.exe-1.1.0.jar
+java -jar target/shutdown.exe-1.1.2.jar
 exit

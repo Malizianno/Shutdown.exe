@@ -6,6 +6,10 @@ import org.springframework.stereotype.Component;
 public class ShutdownController {
     public void execCommand(String timer) {
         try {
+            if (timer == null || timer.isEmpty() || timer.equals("0")) {
+                throw new IllegalArgumentException("Invalid timer value: " + timer);
+            }
+
             // Execute the shutdown command
             Process process = Runtime.getRuntime().exec("powershell.exe shutdown -s -t " + timer);
             process.waitFor(); // Wait for the command to complete

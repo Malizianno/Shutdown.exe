@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>ro.moonlightteam</groupId>
 	<artifactId>shutdown.exe</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.2</version>
 	<name>shutdown.exe</name>
 	<description>Interface for the shutdown command</description>
 	<url />
