@@ -53,6 +53,13 @@ public class ShutdownExe extends Application {
         ApplicationContext context = new AnnotationConfigApplicationContext(ShutdownApplication.class);
         ShutdownController controller = context.getBean(ShutdownController.class);
 
+        try {
+            // start with an abort command to cancel any existing shutdown timers
+            controller.execAbortCommand();
+        } catch (Exception e) {
+            System.out.println("Exception while aborting shutdown: " + e.getMessage());
+        }
+
         Label label = new Label("Shutdown");
 
         // Create the "Run" button
@@ -73,21 +80,21 @@ public class ShutdownExe extends Application {
             if (isNotInputField()) {
                 System.out.println("Closed with switchbox; value: " + timer);
 
-                controller.execCommand(timer);
+                controller.execShutdownCommand(timer);
             } else if (isInputFieldIsInHours()) {
                 System.out.println("Closed with input; value: " + inputField.getText() + " hours");
                 // Convert hours to seconds
                 float hours = Float.parseFloat(inputField.getText());
                 float seconds = hours * 3600;
 
-                controller.execCommand((int) seconds + "");
+                controller.execShutdownCommand((int) seconds + "");
             } else if (isInputFieldIsInMinutes()) {
                 System.out.println("Closed with input; value: " + inputField.getText() + " minutes");
                 // Convert minutes to seconds
                 int minutes = Integer.parseInt(inputField.getText());
                 int seconds = minutes * 60;
 
-                controller.execCommand(seconds + "");
+                controller.execShutdownCommand(seconds + "");
             }
 
             if (hasAnythingRun()) {
