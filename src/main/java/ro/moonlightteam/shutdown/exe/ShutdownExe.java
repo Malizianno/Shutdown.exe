@@ -151,6 +151,7 @@ public class ShutdownExe extends Application {
         GridPane grid = new GridPane();
         grid.setHgap(30);
         grid.setVgap(30);
+        grid.setAlignment(Pos.CENTER);
 
         grid.add(switchBox15, 0, 0);
         grid.add(switchBox30, 1, 0);
@@ -176,14 +177,15 @@ public class ShutdownExe extends Application {
         root.setTop(switchBox);
         // root.setCenter(label);
         root.setBottom(buttonBox);
+        root.setPadding(new Insets(10, 10, 10, 10));
 
-        Scene scene = new Scene(root, 300, 200);
+        Scene scene = new Scene(root, 300, 230);
         scene.getStylesheets().add(getClass().getResource("/switch.css").toExternalForm());
 
         stage.setOnCloseRequest(this::handleClose);
         stage.setTitle(label.getText());
         stage.setScene(scene);
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/shutdown.png")));
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/prohibition.png")));
         stage.show();
     }
 
