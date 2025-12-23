@@ -1,7 +1,5 @@
 package ro.moonlightteam.shutdown.exe;
 
-import java.util.Optional;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -10,9 +8,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -134,14 +130,15 @@ public class ShutdownExe extends Application {
 
         stage.setOnCloseRequest(event -> {
             // Optional: show confirmation dialog
-            // Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to exit?");
+            // Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want
+            // to exit?");
             // alert.setHeaderText("Exit Confirmation");
 
             // Optional<ButtonType> result = alert.showAndWait();
             // if (result.isPresent() && result.get() != ButtonType.OK) {
-            //     event.consume(); // Cancel the close request
+            // event.consume(); // Cancel the close request
             // }
-            stage.close();
+            // stage.close();
             Platform.exit(); // Exit the application
             System.exit(0); // Ensure the application exits completely
         });
