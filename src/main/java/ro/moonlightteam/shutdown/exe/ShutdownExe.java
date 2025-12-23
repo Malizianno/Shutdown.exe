@@ -10,15 +10,23 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import ro.moonlightteam.shutdown.exe.controller.ShutdownController;
 
 public class ShutdownExe extends Application {
+
+    public static final String TIME_HOUR_LABEL = "ore";
+    public static final String TIME_MINUTE_LABEL = "minute";
 
     private static String[] args;
     private String timer = "0"; // Default timer value
@@ -27,6 +35,9 @@ public class ShutdownExe extends Application {
     private CheckBox switchBox30 = new CheckBox("30 min");
     private CheckBox switchBox60 = new CheckBox("1 hour");
     private CheckBox switchBox120 = new CheckBox("2 hours");
+
+    TextField inputField = new TextField();
+    ComboBox<String> dropdown = new ComboBox<>();
 
     public static void launchApp(String[] args) {
         ShutdownExe.args = args;
@@ -43,9 +54,40 @@ public class ShutdownExe extends Application {
         // Create the "Run" button
         Button runButton = new Button("Run");
         runButton.setOnAction(e -> {
-            controller.execCommand(timer);
-            stage.close(); // Close the application after executing the command
+            if (isNotInputField(dropdown)) {
+                System.out.println("Closed with switchbox; value: " + timer);
+
+                controller.execCommand(timer);
+            } else if (isInputFieldIsInHours(dropdown)) {
+                System.out.println("Closed with input; value: " + inputField.getText() + " hours");
+                // Convert hours to seconds
+                int hours = Integer.parseInt(inputField.getText());
+                int seconds = hours * 3600;
+
+                controller.execCommand(seconds + "");
+            } else if (isInputFieldIsInMinutes(dropdown)) {
+                System.out.println("Closed with input; value: " + inputField.getText() + " minutes");
+                // Convert minutes to seconds
+                int minutes = Integer.parseInt(inputField.getText());
+                int seconds = minutes * 60;
+
+                controller.execCommand(seconds + "");
+            }
+
+            handleClose(null); // Close the application after executing the command
         });
+
+        // FIRST ROW
+
+        // --- Top row: input + dropdown ---
+        inputField.setText("0");
+
+        dropdown.setValue(TIME_HOUR_LABEL); // default value
+        dropdown.getItems().addAll(TIME_HOUR_LABEL, TIME_MINUTE_LABEL);
+
+        HBox topRow = new HBox(10, inputField, dropdown);
+        topRow.setAlignment(Pos.CENTER);
+        HBox.setHgrow(inputField, Priority.ALWAYS);
 
         /*
          * SWITCH BOXES
@@ -105,10 +147,20 @@ public class ShutdownExe extends Application {
             }
         });
 
-        // Stack them vertically
-        VBox switchBox = new VBox(10, switchBox15, switchBox30, switchBox60, switchBox120);
-        switchBox.setAlignment(Pos.CENTER_LEFT);
-        switchBox.setPadding(new Insets(1));
+        // Create grid for checkboxes
+        GridPane grid = new GridPane();
+        grid.setHgap(30);
+        grid.setVgap(30);
+
+        grid.add(switchBox15, 0, 0);
+        grid.add(switchBox30, 1, 0);
+        grid.add(switchBox60, 0, 1);
+        grid.add(switchBox120, 1, 1);
+
+        // Design the stacking of checkboxes and first row
+        VBox switchBox = new VBox(15, topRow, grid);
+        switchBox.setAlignment(Pos.CENTER);
+        switchBox.setPadding(new Insets(15));
 
         /*
          * LAYOUT
@@ -128,23 +180,37 @@ public class ShutdownExe extends Application {
         Scene scene = new Scene(root, 300, 200);
         scene.getStylesheets().add(getClass().getResource("/switch.css").toExternalForm());
 
-        stage.setOnCloseRequest(event -> {
-            // Optional: show confirmation dialog
-            // Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want
-            // to exit?");
-            // alert.setHeaderText("Exit Confirmation");
-
-            // Optional<ButtonType> result = alert.showAndWait();
-            // if (result.isPresent() && result.get() != ButtonType.OK) {
-            // event.consume(); // Cancel the close request
-            // }
-            // stage.close();
-            Platform.exit(); // Exit the application
-            System.exit(0); // Ensure the application exits completely
-        });
+        stage.setOnCloseRequest(this::handleClose);
         stage.setTitle(label.getText());
         stage.setScene(scene);
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/shutdown.png")));
         stage.show();
+    }
+
+    private boolean isNotInputField(ComboBox<String> dropdown) {
+        return inputField.getText() == "0";
+    }
+
+    private boolean isInputFieldIsInHours(ComboBox<String> dropdown) {
+        return inputField.getText() != "0" && dropdown.getValue() == TIME_HOUR_LABEL;
+    }
+
+    private boolean isInputFieldIsInMinutes(ComboBox<String> dropdown) {
+        return inputField.getText() != "0" && dropdown.getValue() == TIME_MINUTE_LABEL;
+    }
+
+    private void handleClose(WindowEvent event) {
+        // Optional: show confirmation dialog
+        // Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want
+        // to exit?");
+        // alert.setHeaderText("Exit Confirmation");
+
+        // Optional<ButtonType> result = alert.showAndWait();
+        // if (result.isPresent() && result.get() != ButtonType.OK) {
+        // event.consume(); // Cancel the close request
+        // }
+        // stage.close();
+        Platform.exit(); // Exit the application
+        System.exit(0); // Ensure the application exits completely
     }
 }
