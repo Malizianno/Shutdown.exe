@@ -1,1 +1,3 @@
-This projects implements an UI for the Windows command: shutdown; Customized one ;)
+This project creates a Custom GUI for "shutdown" command in PowerShell (for more run shutdown /? in cmd);
+
+v1.1.3
