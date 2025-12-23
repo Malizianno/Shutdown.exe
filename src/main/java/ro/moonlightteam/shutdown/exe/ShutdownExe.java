@@ -61,10 +61,10 @@ public class ShutdownExe extends Application {
             } else if (isInputFieldIsInHours(dropdown)) {
                 System.out.println("Closed with input; value: " + inputField.getText() + " hours");
                 // Convert hours to seconds
-                int hours = Integer.parseInt(inputField.getText());
-                int seconds = hours * 3600;
+                float hours = Float.parseFloat(inputField.getText());
+                float seconds = hours * 3600;
 
-                controller.execCommand(seconds + "");
+                controller.execCommand((int) seconds + "");
             } else if (isInputFieldIsInMinutes(dropdown)) {
                 System.out.println("Closed with input; value: " + inputField.getText() + " minutes");
                 // Convert minutes to seconds
@@ -82,7 +82,7 @@ public class ShutdownExe extends Application {
         // --- Top row: input + dropdown ---
         inputField.setText("0");
 
-        dropdown.setValue(TIME_HOUR_LABEL); // default value
+        dropdown.setValue(TIME_HOUR_LABEL); // default value - ore
         dropdown.getItems().addAll(TIME_HOUR_LABEL, TIME_MINUTE_LABEL);
 
         HBox topRow = new HBox(10, inputField, dropdown);
@@ -169,7 +169,7 @@ public class ShutdownExe extends Application {
         // Layout for bottom-right positioning
         HBox buttonBox = new HBox(runButton);
         buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
-        buttonBox.setPadding(new Insets(10));
+        buttonBox.setPadding(new Insets(10, 10, 10, 10));
 
         // Use BorderPane to position elements
         BorderPane root = new BorderPane();
