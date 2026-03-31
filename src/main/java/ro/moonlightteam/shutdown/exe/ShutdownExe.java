@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -18,6 +19,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -25,6 +28,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 import ro.moonlightteam.shutdown.exe.controller.ShutdownController;
 
 public class ShutdownExe extends Application {
@@ -35,10 +39,12 @@ public class ShutdownExe extends Application {
     private static String[] args;
     private String timer = "0"; // Default timer value
 
-    private CheckBox switchBox15 = new CheckBox("15 min");
-    private CheckBox switchBox30 = new CheckBox("30 min");
-    private CheckBox switchBox60 = new CheckBox("1 hour");
-    private CheckBox switchBox120 = new CheckBox("2 hours");
+    private final CheckBox switchBox15 = new CheckBox("15 min");
+    private final CheckBox switchBox30 = new CheckBox("30 min");
+    private final CheckBox switchBox60 = new CheckBox("1 hour");
+    private final CheckBox switchBox90 = new CheckBox("1.5 hours");
+    private final CheckBox switchBox180 = new CheckBox("3 hours");
+    private final CheckBox switchBox210 = new CheckBox("3.5 hours");
 
     TextField inputField = new TextField();
     ComboBox<String> dropdown = new ComboBox<>();
@@ -53,6 +59,16 @@ public class ShutdownExe extends Application {
         ApplicationContext context = new AnnotationConfigApplicationContext(ShutdownApplication.class);
         ShutdownController controller = context.getBean(ShutdownController.class);
 
+        // create the auto-close timer for the window (2 minutes)
+        PauseTransition autoCloseTimer = new PauseTransition(Duration.seconds(120)); // 2 minutes
+
+        autoCloseTimer.setOnFinished(event -> {
+            System.out.println("Auto-close timer finished, closing the application.");
+            handleClose(null); // Close the application when the timer finishes
+        });
+
+        autoCloseTimer.play(); // Start the auto-close timer
+
         try {
             // start with an abort command to cancel any existing shutdown timers
             controller.execAbortCommand();
@@ -60,12 +76,41 @@ public class ShutdownExe extends Application {
             System.out.println("Exception while aborting shutdown: " + e.getMessage());
         }
 
+        try {
+            // after abort try the default to 2h (7200s) shutdown timer
+            controller.execShutdownCommand("7200");
+        } catch (Exception e) {
+            System.out.println("Exception while setting default shutdown timer: " + e.getMessage());
+        }
+
         Label label = new Label("Shutdown");
+
+        // Create the 'Cancel' button
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setOnAction(e -> {
+            System.out.println("Cancel button clicked");
+
+            try {
+                controller.execAbortCommand();
+            } catch (Exception ex) {
+                System.out.println("Exception while executing cancel command: " + ex.getMessage());
+            }
+
+            handleClose(null); // Close the application after executing the command
+        });
 
         // Create the "Run" button
         Button runButton = new Button("Run");
         runButton.setOnAction(e -> {
             System.out.println("Run button clicked");
+
+            try {
+                // start with an abort command to cancel any existing shutdown timers
+                controller.execAbortCommand();
+            } catch (Exception ex) {
+                System.out.println("Exception while executing run command, but first abort shutdown: " + ex.getMessage());
+            }
+
             System.out.println("Input field value: " + inputField.getText());
             System.out.println("Dropdown value: " + dropdown.getValue());
             System.out.println("Timer value: " + timer);
@@ -110,7 +155,6 @@ public class ShutdownExe extends Application {
         });
 
         // FIRST ROW
-
         // --- Top row: input + dropdown ---
         inputField.setText("0");
 
@@ -124,12 +168,13 @@ public class ShutdownExe extends Application {
         /*
          * SWITCH BOXES
          */
-
         // defaults for checkboxes
         switchBox15.setSelected(false);
         switchBox30.setSelected(false);
         switchBox60.setSelected(false);
-        switchBox120.setSelected(false);
+        switchBox90.setSelected(false);
+        switchBox180.setSelected(false);
+        switchBox210.setSelected(false);
 
         // Optional: Add listener switchBox15
         switchBox15.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
@@ -139,7 +184,9 @@ public class ShutdownExe extends Application {
                 timer = "900"; // 15 minutes in seconds
                 switchBox30.setSelected(false);
                 switchBox60.setSelected(false);
-                switchBox120.setSelected(false);
+                switchBox90.setSelected(false);
+                switchBox180.setSelected(false);
+                switchBox210.setSelected(false);
             }
         });
 
@@ -151,7 +198,9 @@ public class ShutdownExe extends Application {
                 timer = "1800"; // 30 minutes in seconds
                 switchBox15.setSelected(false);
                 switchBox60.setSelected(false);
-                switchBox120.setSelected(false);
+                switchBox90.setSelected(false);
+                switchBox180.setSelected(false);
+                switchBox210.setSelected(false);
             }
         });
 
@@ -163,19 +212,50 @@ public class ShutdownExe extends Application {
                 timer = "3600"; // 1 hour in seconds
                 switchBox15.setSelected(false);
                 switchBox30.setSelected(false);
-                switchBox120.setSelected(false);
+                switchBox90.setSelected(false);
+                switchBox180.setSelected(false);
+                switchBox210.setSelected(false);
             }
         });
 
-        // Optional: Add listener switchBox120
-        switchBox120.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-            System.out.println("120: wasSelected: " + wasSelected + ", isSelected: " + isSelected);
+        switchBox90.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            System.out.println("90: wasSelected: " + wasSelected + ", isSelected: " + isSelected);
 
             if (isSelected) {
-                timer = "7200"; // 2 hours in seconds
+                timer = "5400"; // 1.5 hours in seconds
                 switchBox15.setSelected(false);
                 switchBox30.setSelected(false);
                 switchBox60.setSelected(false);
+                switchBox180.setSelected(false);
+                switchBox210.setSelected(false);
+            }
+        });
+
+        // Optional: Add listener switchBox180
+        switchBox180.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            System.out.println("180: wasSelected: " + wasSelected + ", isSelected: " + isSelected);
+
+            if (isSelected) {
+                timer = "7200"; // 3 hours in seconds
+                switchBox15.setSelected(false);
+                switchBox30.setSelected(false);
+                switchBox60.setSelected(false);
+                switchBox90.setSelected(false);
+                switchBox210.setSelected(false);
+            }
+        });
+
+        // Optional: Add listener switchBox210
+        switchBox210.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            System.out.println("210: wasSelected: " + wasSelected + ", isSelected: " + isSelected);
+
+            if (isSelected) {
+                timer = "9000"; // 3.5 hours in seconds
+                switchBox15.setSelected(false);
+                switchBox30.setSelected(false);
+                switchBox60.setSelected(false);
+                switchBox90.setSelected(false);
+                switchBox180.setSelected(false);
             }
         });
 
@@ -188,7 +268,9 @@ public class ShutdownExe extends Application {
         grid.add(switchBox15, 0, 0);
         grid.add(switchBox30, 1, 0);
         grid.add(switchBox60, 0, 1);
-        grid.add(switchBox120, 1, 1);
+        grid.add(switchBox90, 1, 1);
+        grid.add(switchBox180, 0, 2);
+        grid.add(switchBox210, 1, 2);
 
         // Design the stacking of checkboxes and first row
         VBox switchBox = new VBox(15, topRow, grid);
@@ -198,21 +280,25 @@ public class ShutdownExe extends Application {
         /*
          * LAYOUT
          */
-
         // Layout for bottom-right positioning
-        HBox buttonBox = new HBox(runButton);
-        buttonBox.setAlignment(Pos.BOTTOM_RIGHT);
-        buttonBox.setPadding(new Insets(10, 10, 10, 10));
+        HBox buttonsBox = new HBox(20, cancelButton, runButton); // distance between buttons + actual buttons
+        buttonsBox.setAlignment(Pos.BOTTOM_RIGHT);
+        buttonsBox.setPadding(new Insets(10, 10, 10, 10));
 
         // Use BorderPane to position elements
         BorderPane root = new BorderPane();
         root.setTop(switchBox);
         // root.setCenter(label);
-        root.setBottom(buttonBox);
+        root.setBottom(buttonsBox);
         root.setPadding(new Insets(10, 10, 10, 10));
 
-        Scene scene = new Scene(root, 300, 230);
+        // Create the scene (with window dimensions) and apply CSS
+        Scene scene = new Scene(root, 300, 290);
         scene.getStylesheets().add(getClass().getResource("/switch.css").toExternalForm());
+
+        // Reset the auto-close timer on any mouse/keyboard activity within the application
+        scene.addEventFilter(MouseEvent.ANY, event -> autoCloseTimer.playFromStart());
+        scene.addEventFilter(KeyEvent.ANY, event -> autoCloseTimer.playFromStart());
 
         stage.setOnCloseRequest(this::handleClose);
         stage.setTitle(label.getText());
@@ -238,6 +324,7 @@ public class ShutdownExe extends Application {
     }
 
     private void handleClose(WindowEvent event) {
+        System.out.println("Closing the application with event: " + event);
         // Optional: show confirmation dialog
         // Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want
         // to exit?");
